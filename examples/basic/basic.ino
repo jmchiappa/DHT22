@@ -17,9 +17,9 @@
 // refer to the MCU datasheet for the list of timers
 // this example is based on the P-NUCLEO-WB55RG (4 timers available)
 
-const uint8_t PIN=D6;
+const uint8_t PIN=D2;
 
-DHT22 dht(PIN,TIM17);
+DHT22 dht(PIN,TIM7);
 
 void setup() {
   Serial.begin(115200);
@@ -34,7 +34,7 @@ void loop() {
     Serial.print("Temperature : ");
     Serial.print(dht.readTemperature());
     Serial.print("\tHumidity : ");
-    Serial.print(dht.readHumidity());
+    Serial.println(dht.readHumidity());
     // wait for a while
     delay(500);
     // and start a new acquisition

@@ -24,6 +24,9 @@ static uint8_t data[5];
 static HardwareTimer *tim;
 static uint8_t idx=0;
 static uint16_t startTime;
+static uint16_t endTime;
+int32_t overflow;
+
 static uint8_t _thisPin;
 DHT22::DHT22(uint8_t pin, TIM_TypeDef *instance){
   htimer = instance;
@@ -34,8 +37,10 @@ DHT22::DHT22(uint8_t pin, TIM_TypeDef *instance){
 void DHT22::begin() {
   tim = new HardwareTimer(htimer);
   TimerModes_t mode = tim->getMode(1);
-  if( (mode==TIMER_DISABLED) || (mode==TIMER_OUTPUT_COMPARE))
+  if( (mode==TIMER_DISABLED) || (mode==TIMER_OUTPUT_COMPARE)) {
     tim->setMode(1,TIMER_OUTPUT_COMPARE_ACTIVE);
+    overflow = tim->getOverflow(MICROSEC_FORMAT); // return overflow depending on format provided
+  }
 
   tim->resume();
 }
@@ -47,19 +52,25 @@ void DHT22::begin() {
  * 
  */
 static void DHT22read() {
+  
   if(digitalRead(_thisPin)) {
     // high level is beginging, catch the timer
     startTime = tim->getCount(MICROSEC_FORMAT);
   }else{
     // low level detected, end of high level calculate duration
-    duration[idx]=tim->getCount(MICROSEC_FORMAT)-startTime;
+    endTime=tim->getCount(MICROSEC_FORMAT);
+    if(startTime>endTime) {
+      duration[idx]=(int32_t)endTime-(int32_t)startTime+overflow;
+    }else
+      duration[idx]=endTime-startTime;
+
     idx++;
   }
 
   if(idx==42) {
     // transmission is over, convert to buffer
     for(uint8_t i=0; i<40;i++) {
-      data[i/8] = data[i/8]<<1 | (duration[2+i]>50) ;
+      data[i/8] = data[i/8]<<1 | ( duration[2+i]>50) ;
       // Serial.println(duration[2+i]);
     }
     // for(uint8_t i=0;i<5;i++) {
