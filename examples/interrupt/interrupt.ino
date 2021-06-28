@@ -19,7 +19,25 @@
 
 const uint8_t PIN=D2;
 
-DHT22 dht(PIN,TIM7);
+// prototype of the callback
+
+void sampleCompleted(DHT22::Result *);
+
+// callback can be passed to the constructor or assign lazely with attach(callback);
+DHT22 dht(PIN,TIM17,&sampleCompleted);
+
+// callback when the sample is ready
+// don't care to loop on an available sample
+void sampleCompleted(DHT22::Result *res) {
+    Serial.print("Temperature : ");
+    Serial.print(res->temperature);
+    Serial.print("\tHumidity : ");
+    Serial.println(res->humidity);
+    // just wait for a moment
+    delay(500);
+    // and start a new acquisition
+    dht.startNewAcquisition();
+}
 
 void setup() {
   Serial.begin(115200);
@@ -29,17 +47,6 @@ void setup() {
 
 void loop() {
 
-  if( dht.available() ) {
-    // new value is available
-    Serial.print("Temperature : ");
-    Serial.print(dht.readTemperature());
-    Serial.print("\tHumidity : ");
-    Serial.println(dht.readHumidity());
-    // wait for a while
-    delay(500);
-    // and start a new acquisition
-    dht.startNewAcquisition();
-  }
+  // do your stuff...
 
-  // do another stuff...
 }

@@ -1,5 +1,5 @@
 #######################################
-# Syntax Coloring Map Servo
+# Syntax Coloring Map
 #######################################
 
 #######################################
@@ -12,10 +12,11 @@ DHT22	KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 startNewAcquisition	KEYWORD2
-newValue	KEYWORD2
+available	KEYWORD2
 readTemperature	KEYWORD2
 readHumidity	KEYWORD2
-
+attach KEYWORD2
 #######################################
 # Constants (LITERAL1)
 #######################################
+DHT22::Result LITERAL1

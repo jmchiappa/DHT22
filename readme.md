@@ -11,7 +11,7 @@ This lib works under interrupt so no time is spending to wait for end of convers
 
 ### variable declaration
 
-`DHT22 dht(pin , <timer instance>`);
+`DHT22 dht(pin , <timer instance>);`
 
 `Timer instance` must be be a valid timer instance of the MCU. As STM32 MCUs have different configuration, refer to the datasheet to choose the right one.
 
@@ -19,9 +19,22 @@ for example : `DHT22 dht( D2, TIM17 );`
 
 Any pin can be used to connect the DHT22 sensor.
 
+Another constructor is available if you want to grab sample within a callback instead of polling on an available sample :
+
+`DHT22 dht(pin, <timer instance>, <callback function>);`
+
+callback's signature is :
+
+`void sampleCompleted(DHT22::Result *);`
+
+`DHT22::Result` is a structure that returns 3 values :
+* `newValue : boolean` set to `true` when a new sample is available
+* `temperature : float` get the temperature in °C
+* `humdity : float` get the relative humidity in %
+
 ### start an acquisition
 
-As this library is working on interrupt only, it is based on "fire and forget" style.
+As this library is working in interrupt only, it is based on "fire and forget" style. It clears the available flag if needed.
 
 `dht.startNewAcquisition();`
 
@@ -43,4 +56,4 @@ return a float value of current temperature expressed in °C. Once this value is
 
 return a float value of current relative humidity expressed in percent. Once this value is read, the available flag is cleared.
 
-see example `basic.ino`
+see examples `basic.ino` and `inteerupt.ino`

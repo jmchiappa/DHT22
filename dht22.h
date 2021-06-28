@@ -17,16 +17,30 @@
  
 static void DHT22read();
 
+#ifdef __cplusplus
+
+#include <functional>
+
 class DHT22
 {
 public:
-  DHT22(uint8_t pin, TIM_TypeDef *instance);
+
+  typedef struct Result {
+    float temperature;
+    float humidity;
+    bool newValue;
+  };
+  typedef void (*callback_t)(DHT22::Result *);
+
+  DHT22(uint8_t pin, TIM_TypeDef *instance,callback_t callback=NULL);
   void begin();
   void startNewAcquisition();
   float readTemperature();
   float readHumidity();
   boolean available();
+  void attach(callback_t callback);
 private:
+  
   void update(void);
   TIM_TypeDef *htimer=NULL;
   uint8_t _pin;
@@ -34,5 +48,8 @@ private:
   float rh;
   bool _newValue;
 };
+
+#endif /* __cplusplus */
+
 
 #endif // DHT22_H

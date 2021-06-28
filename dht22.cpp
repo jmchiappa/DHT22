@@ -12,12 +12,9 @@
 
 #include "dht22.h"
 
-static struct Result {
-  float temperature;
-  float hygro;
-  bool newValue;
-} result;
 
+
+static DHT22::Result result;
 // local variable
 static uint8_t duration[42];
 static uint8_t data[5];
@@ -28,20 +25,24 @@ static uint16_t endTime;
 int32_t overflow;
 
 static uint8_t _thisPin;
-DHT22::DHT22(uint8_t pin, TIM_TypeDef *instance){
+
+static DHT22::callback_t _callback;
+
+DHT22::DHT22(uint8_t pin, TIM_TypeDef *instance,DHT22::callback_t callback){
+  _callback = callback;
   htimer = instance;
   _pin = pin;
   _thisPin = pin;
 }
 
 void DHT22::begin() {
+  pinMode(D13,OUTPUT);
   tim = new HardwareTimer(htimer);
   TimerModes_t mode = tim->getMode(1);
   if( (mode==TIMER_DISABLED) || (mode==TIMER_OUTPUT_COMPARE)) {
     tim->setMode(1,TIMER_OUTPUT_COMPARE_ACTIVE);
     overflow = tim->getOverflow(MICROSEC_FORMAT); // return overflow depending on format provided
   }
-
   tim->resume();
 }
 
@@ -70,7 +71,7 @@ static void DHT22read() {
   if(idx==42) {
     // transmission is over, convert to buffer
     for(uint8_t i=0; i<40;i++) {
-      data[i/8] = data[i/8]<<1 | ( duration[2+i]>50) ;
+      data[i/8] = data[i/8]<<1 | (duration[2+i]>50) ;
       // Serial.println(duration[2+i]);
     }
     // for(uint8_t i=0;i<5;i++) {
@@ -78,15 +79,20 @@ static void DHT22read() {
     // }
     // checksum is ok ?
     if (data[4] == ((data[0] + data[1] + data[2] + data[3]) & 0xFF)) {
-      result.hygro = (((word)data[0]) << 8 | data[1])*0.1f;
+      result.humidity = (((word)data[0]) << 8 | data[1])*0.1f;
       result.temperature = ((word)(data[2] & 0x7F)) << 8 | data[3];
       result.temperature *= 0.1;
       if (data[2] & 0x80) {
         result.temperature *= -1;
       }
       result.newValue = true;
+
+      if(_callback!=NULL)
+        (_callback)(&result);
     } else {
       // checksum error, no data
+      digitalToggle(D13);
+
     }
     idx=0;
   }
@@ -103,7 +109,11 @@ float DHT22::readTemperature() {
 
 float DHT22::readHumidity() {
   result.newValue = false;
-  return result.hygro;
+  return result.humidity;
+}
+
+void DHT22::attach(callback_t callback) {
+  _callback = callback;
 }
 
 void DHT22::startNewAcquisition() {
