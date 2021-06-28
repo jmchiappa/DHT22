@@ -1,0 +1,21 @@
+#######################################
+# Syntax Coloring Map Servo
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+DHT22	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+startNewAcquisition	KEYWORD2
+newValue	KEYWORD2
+readTemperature	KEYWORD2
+readHumidity	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
